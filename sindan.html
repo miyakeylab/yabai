@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <script src="js/sweetalert.min.js"></script>
+    <script src="js/intro.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/sweetalert.css">
+    <!--  ファビコン指定  -->
+    <link rel="shortcut icon" href="ico/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="css/reset.css" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" type="text/css" href="css/introjs.css">
+    <title>ヤバいフリーランスエンジニア市場価値診断</title>
+    <script>
+        $(function() {
+            /**********************/
+            /*　グローバル変数　　　　*/
+            /**********************/
+
+
+            // 回答用ラジオボタン
+            var ans_radio = [
+                '<input type="radio" id="Checkbox1" class="radio-1" name="rad" value="1">', '<input type="radio" id="Checkbox2" class="radio-2" name="rad" value="2">', '<input type="radio" id="Checkbox3" class="radio-3" name="rad" value="3">', '<input type="radio" id="Checkbox4" class="radio-4" name="rad" value="4">'
+            ];
+            // 答え用ボタン
+            var ans_btn = ['<button class="ans-1" id="answer-1">回答</button>', '<button class="ans-2" id="answer-2">回答</button>', '<button class="ans-3" id="answer-3">回答</button>', '<button class="ans-4" id="answer-4">回答</button>'];
+            // 難易度選択
+            var select = ["【難易度選択】ヤバさを選んでください。<br><br>",
+                "ヤバい  (結果のみ)",
+                "軽くヤバい (質問3問)",
+                "普通 (質問10問)",
+                "かなりヤバい (質問10問+時間制限)"
+            ];
+            // 難易度選択ボタン
+            var select_btn = '<button class="ans-4" id="select">選択</button>';
+            // 問題(2次元配列)
+            // key=問題番号
+            // value=問題文,回答1,回答2,回答3,回答4,正解番号,正解時文言,間違い時文言
+            var question = [
+                ["あなたにとってPHPとは", "人生", "商売道具", "ペット", "無", 1, "参考にいたします", ""],
+                ["gitの経験は？", "commitは出来ます", "rebase出来ます", "cherry-pickも余裕よ", "git?", 4, "pullします！", ""],
+                ["好きなWEBフレームワークは？", "Laravel", "cakePHP", "symfony", "経験なし", 4, "へぇ", ""],
+                ["スタートアップ企業は好き？", '別に', '結構好き', 'めちゃくちゃ好き', '苦手', 4, "人それぞれですよね", ""],
+                ["技術はあくまでも手段に過ぎない？", "そうですね", "その一面も否定できない", "そんなことはない", "技術こそすべて", 2, "マジか", ""],
+                ["AWS経験はありますか？", "1年未満", "1〜3年", "3〜5年", "5年以上", 4, "了解！", ""],
+                ["今何時？", "", "", "", "", 4, "時間に正確ですね！", "間違っています。時間に不正確ですね。"],
+                ["あなたの血液型は？", "A型", "B型", "O型", "AB型", 2, "へぇ〜、そうなんですね。価値診断には影響しません", ""],
+                ["今、何問目？", "", "", "", "", 2, "流石ですね！", "問題数も数えれないで診断結果を表示しようなんて冗談きついですよねw"],
+                ["DBを扱った経験は？", "1年未満", "1〜3年", "3〜5年", "5年以上", 1, "SELECT text from comment_table where text = 'なるほど'; ですね", ""]
+            ];
+
+            // 検索文字列
+            var searcText = "";
+            // 問題数
+            var questionCount = 0;
+            // 現在の問題番号
+            var nowQuestion = 0;
+            // 出題済み
+            var outputArray = new Array();
+            //難易度
+            var level = 0;
+            // ログフラグ
+            var logFlg = true;
+            // タイマーID
+            var timeID = 0;
+            // タイマー値
+            var timeMax = 45;
+            /**********************/
+            /*　イベント　　　　　　　*/
+            /**********************/
+            //
+            // ページ読み込み時
+            //
+            $(document).ready(function() {
+                Log("ページ読み出し処理");
+                // introスタート
+                introJs().start();
+            });
+            //
+            // 検索ボタン押下時
+            //
+            $("#search").on("click", function() {
+                Log("検索ボタン押下");
+                $("#main-text").html(select[0]);
+                $("#radio-1").html(ans_radio[0] + select[1]);
+                $("#radio-2").html(ans_radio[1] + select[2]);
+                $("#radio-3").html(ans_radio[2] + select[3]);
+                $("#radio-4").html(ans_radio[3] + select[4]);
+                $("#final-button").html(select_btn);
+
+                // 検索文字列を保存しておく
+                searcText = $("#serchText").val();
+            });
+            //
+            // 難易度選択ボタン押下(動的ボタンに対するクリックイベント)
+            //
+            $(document).on('click', '#select', function() {
+                // ラジオボタン取得
+                var data = $('input[name="rad"]:checked').val();
+
+                if (data == 1) {
+                    // 第一問
+                    level = data;
+
+                    endDisp(20000);
+                } else if ((data == 2) ||
+                    (data == 3) ||
+                    (data == 4)) {
+                    level = data;
+                    questionDisp();
+                } else {
+                    // 何も選択されていない場合の処理
+                    swal("項目が選択されていません。これではとてもじゃないですが、診断結果は表示できません。");
+                }
+            });
+            //
+            //Luckyボタン押下時
+            //
+            $("#lucky").on("click", function() {
+
+                Log("Luckyボタン押下");
+
+                // 乱数(1〜3)
+                var luckyNum = Math.floor(Math.random() * 3 + 1);
+
+                Log("lucky=" + luckyNum);
+
+                switch (luckyNum) {
+                    case 1:
+                        {
+                            swal("え？");
+                            break;
+                        }
+                    case 2:
+                        {
+                            swal("ん？");
+                            break;
+                        }
+                    case 3:
+                        {
+                            swal("は？");
+                            break;
+                        }
+                    default:
+                        alertDisp(false, "omg!");
+                        break;
+                }
+
+            });
+            //
+            // 1が答えのボタン押下(動的ボタンに対するクリックイベント)
+            //
+            $(document).on('click', '#answer-1', function() {
+
+                ansSelect();
+            });
+            //
+            // 2が答えのボタン押下(動的ボタンに対するクリックイベント)
+            //
+            $(document).on('click', '#answer-2', function() {
+
+                ansSelect();
+            });
+            //
+            // 3が答えのボタン押下(動的ボタンに対するクリックイベント)
+            //
+            $(document).on('click', '#answer-3', function() {
+
+                ansSelect();
+            });
+            //
+            // 4が答えのボタン押下(動的ボタンに対するクリックイベント)
+            //
+            $(document).on('click', '#answer-4', function() {
+
+                ansSelect();
+            });
+
+            /**********************/
+            /*　共通関数　　　　　　　*/
+            /**********************/
+
+            //
+            // 問題表示用
+            //
+            function questionDisp() {
+
+                Log("問題表示");
+                var questionNum = questionSelect();
+                if (questionNum <= 10) {
+
+                    $("#main-text").html(question[questionNum][0]);
+                    // 今何問目?
+                    if (questionNum == 8) {
+                        var cnt = outputArray.length;
+                        // 2問目以上、9問目未満
+                        if (cnt > 1 &&
+                            cnt < 9) {
+                            $("#radio-1").html(ans_radio[0] + (cnt - 1) + "問目");
+                            $("#radio-2").html(ans_radio[1] + (cnt) + "問目");
+                            $("#radio-3").html(ans_radio[2] + (cnt + 1) + "問目");
+                            $("#radio-4").html(ans_radio[3] + (cnt + 2) + "問目");
+                        } else if (cnt == 1) {
+                            // 1問目の時
+                            $("#radio-1").html(ans_radio[0] + (cnt + 1) + "問目");
+                            $("#radio-2").html(ans_radio[1] + (cnt) + "問目");
+                            $("#radio-3").html(ans_radio[2] + (cnt + 3) + "問目");
+                            $("#radio-4").html(ans_radio[3] + (cnt + 5) + "問目");
+                        } else {
+                            // 9,10問目
+                            $("#radio-1").html(ans_radio[0] + (cnt - 2) + "問目");
+                            $("#radio-2").html(ans_radio[1] + (cnt) + "問目");
+                            $("#radio-3").html(ans_radio[2] + (cnt - 1) + "問目");
+                            $("#radio-4").html(ans_radio[3] + (cnt - 4) + "問目");
+                        }
+                    } else if (questionNum == 6) {
+                        // 今何時？
+                        // 時刻取得
+                        var DD = new Date();
+                        var str = new Array();
+                        for (var i = 0; i < 4; i++) {
+                            // 西暦
+                            var Year = DD.getFullYear();
+                            var Month = DD.getMonth() + 1;
+                            var Day = DD.getDate();
+                            var hour = DD.getHours();
+
+                            str.push(Year + "年" + Month + "月" + Day + "日" + hour + "時");
+                            // 一時間プラス
+                            DD.setHours(DD.getHours() + 1);
+                        }
+                        $("#radio-1").html(ans_radio[0] + str[3]);
+                        $("#radio-2").html(ans_radio[1] + str[1]);
+                        $("#radio-3").html(ans_radio[2] + str[2]);
+                        $("#radio-4").html(ans_radio[3] + str[0]);
+                    } else {
+                        $("#radio-1").html(ans_radio[0] + question[questionNum][1]);
+                        $("#radio-2").html(ans_radio[1] + question[questionNum][2]);
+                        $("#radio-3").html(ans_radio[2] + question[questionNum][3]);
+                        $("#radio-4").html(ans_radio[3] + question[questionNum][4]);
+                    }
+                    $("#final-button").html(ans_btn[(question[questionNum][5] - 1)]);
+                    // 問題番号を保持する
+                    nowQuestion = questionNum;
+
+                    if (level == 4 && outputArray.length == 1) {
+
+                        // タイマー最大値
+                        timeMax = 20;
+                        timeID = setInterval(function() {
+                            Log("タイムアウト" + timeMax);
+                            timeMax--;
+                            if (timeMax >= 10) {
+                                // 10秒までは青
+                                $("#time").html('<p class="blue">' + timeMax + '</p>');
+                            } else {
+                                // ラスト10秒は赤
+                                $("#time").html('<p class="red">' + timeMax + '</p>');
+                            }
+
+                            if (timeMax <= 0) {
+                                alertDisp(false, "時間切れです。おしまいです。")
+                                endDisp(6000);
+                            }
+
+                        }, 1000);
+                        $("#time").html('<p class="blue">' + timeMax + '</p>');
+                    }
+
+                } else {
+
+                    endDisp(30000);
+
+                }
+            }
+
+            //
+            // 問題番号取得用
+            //
+            function questionSelect() {
+
+                Log("問題番号取得 " + outputArray.length);
+                var num = 11;
+                var max = 0;
+                if (level == 2) {
+                    max = 3;
+                } else {
+                    max = 10;
+                }
+                // 出力済み問題数がmax値以下
+                if (outputArray.length < max) {
+                    // 無限ループ
+                    while (true) {
+                        var tmp = Math.floor(Math.random() * 10);
+                        var flg = false; //重複フラグ
+
+                        // 重複チェック
+                        for (var i = 0; i < outputArray.length; i++) {
+                            if (outputArray[i] == tmp) {
+                                flg = true;
+                            }
+                        }
+                        // 重複なし
+                        if (flg == false) {
+                            num = tmp;
+                            // 配列追加
+                            outputArray.push(tmp);
+                            break;
+                        }
+                    }
+                }
+
+                return num;
+            }
+            //
+            // 回答結果処理
+            //
+            function ansSelect() {
+
+                Log("回答結果");
+                var data = $('input[name="rad"]:checked').val();
+
+                if (data == 1 ||
+                    data == 2 ||
+                    data == 3 ||
+                    data == 4) {
+                    // 血液型or内心
+                    if (nowQuestion == 0 ||
+                        nowQuestion == 1 ||
+                    nowQuestion == 2 ||
+                    nowQuestion == 3 ||
+                    nowQuestion == 4 ||
+                    nowQuestion == 5 ||
+                    nowQuestion == 7 ||
+                        nowQuestion == 9) {
+                        // 必ず正解
+                        alertDisp(true, question[nowQuestion][6]);
+                        questionDisp();
+                    } else {
+
+                        if (data == question[nowQuestion][5]) {
+                            // 正解
+                            alertDisp(true, question[nowQuestion][6]);
+                            questionDisp();
+                        } else {
+                            // 誤答
+                            alertDisp(false, question[nowQuestion][7]);
+                            questionDisp();
+                        }
+                    }
+
+                } else {
+                    // 何も選択されていない場合の処理
+                    swal("項目が選択されていません。これでは診断結果は表示できません。");
+                }
+            }
+            //
+            //最終画面
+            //
+            function endDisp(num) {
+
+                Log("最終画面");
+                var tanka = 'あなたの日単価は' + num + '円です。<br>';
+                 tanka += '週3で働く場合、<br>月' + num * 12 + '円です。<br>';
+                 tanka += '年' + (num * 12) * 12  + '円です。<br>';
+                 tanka += 'かかる税金はおよそ' + (num * 12) * 6  + '円です。<br>';
+                 tanka += '手取りはおよそ' + (num * 12) * 6  + '円です。<br>';
+
+                // 検索結果なし文字列
+                var final = "<br><br>以下のサイトも確認ください。";
+
+                // googleサイトリンク
+                var linkText = '<a href="https://itpropartners.com/">https://itpropartners.com/(ヤバくない)</a>';
+                // 最終結果表示
+                $("#main-text").html('<p class="text-last">' + '<span class="text-span"> ' + tanka + " " + '</span>' + final + "</p>" + linkText);
+
+                // その他クリア
+                $("#radio-1").html("");
+                $("#radio-2").html("");
+                $("#radio-3").html("");
+                $("#radio-4").html("");
+                $("#final-button").html("");
+
+                // 問題数初期化
+                questionCount = 0;
+                nowQuestion = 0;
+                outputArray = new Array();
+                if (level == 4) {
+                    clearInterval(timeID);
+                    timeID = 0;
+                    $("#time").html("");
+                }
+            }
+            //
+            //失敗時画面
+            //
+            function failDisp() {
+
+                Log("失敗時画面");
+                $("#main-text").html("");
+                $("#radio-1").html("");
+                $("#radio-2").html("");
+                $("#radio-3").html("");
+                $("#radio-4").html("");
+                $("#final-button").html("");
+                // 問題数初期化
+                questionCount = 0;
+                nowQuestion = 0;
+                outputArray = new Array();
+                if (level == 4) {
+                    clearInterval(timeID);
+                    timeID = 0;
+                    $("#time").html("");
+                }
+            }
+
+            //
+            // alert用処理
+            //
+            function alertDisp(mode, text) {
+
+                // 正解
+                if (mode == true) {
+
+                    swal("Good job!", text, "success");
+                } else {
+                    swal("oh..!", text, "error");
+                }
+
+            }
+            //
+            //ログ
+            //
+            function Log(logdata) {
+                // ログフラグ
+                if (logFlg == true) {
+                    // 出力
+                    console.log(logdata);
+                }
+            }
+        });
+
+    </script>
+</head>
+
+<body>
+
+    <header>
+        <div id="time"></div>
+        <div id="comp"></div>
+        <h1>
+            <span class="blue">ヤ</span>
+            <span class="yellow">バ</span>
+            <span class="green">い</span>
+            <span class="red">フ</span>
+            <span class="yellow">リ</span>
+            <span class="blue">ー</span>
+            <span class="yellow">ラ</span>
+            <span class="blue">ン</span>
+            <span class="red">ス</span>
+
+            <br>
+            <span class="blue">エ</span>
+            <span class="yellow">ン</span>
+            <span class="green">ジ</span>
+            <span class="red">ニ</span>
+            <span class="blue">ア</span>
+            <span class="blue">市</span>
+            <span class="red">場</span>
+            <span class="yellow">価</span>
+            <span class="blue">値</span>
+            <span class="green">診</span>
+            <span class="red">断</span>
+        </h1>
+    </header>
+
+    <main>
+        <ul>
+            <!--      intro1     -->
+            <li class="search-pos"><input type="text" id="serchText" class="search-box" data-step="1" data-intro="まずはスキルを入力します。PHPと入力してください！" /></li>
+            <li><span class=left>
+            <!--      intro2     -->
+                <button class="buttonSearch" id="search" data-step="2" data-intro="診断ボタンを押下します。" >ヤバい 診断</button></span><button class="buttonSearch-right" id="lucky">I'm Feeling Lucky</button></li>
+        </ul>
+        <!--   intro3     -->
+        <div class="main-pos">
+            <div class="main" name="#mainradio" data-step="3" data-intro="この辺に質問が出てくると思います。回答すると診断結果が表示されます。">
+                <!--   問題文     -->
+                <div id="main-text"></div>
+                <!--    チェックボックス        -->
+                <div id="radio-1"></div>
+                <div id="radio-2"></div>
+                <div id="radio-3"></div>
+                <div id="radio-4"></div>
+            </div>
+        </div>
+        <!--   回答ボタン     -->
+        <ul>
+            <li>
+                <div id="final-button"></div>
+            </li>
+        </ul>
+    </main>
+
+    <footer></footer>
+
+</body>
+
+</html>

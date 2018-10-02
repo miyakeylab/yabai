@@ -1,0 +1,184 @@
+body{
+    margin:0 auto;
+    padding:0;
+    text-align:left;
+    font-size: 32px;
+}
+header{
+    background-color: #fff;
+    text-align: center;
+}
+main{
+}
+footer{
+    background-color: #fff;
+    text-align: center;
+}
+
+/*タイトル*/
+h1{
+    padding-top: 30px;
+    
+}
+.text-last{
+    font-size: 24px;
+    padding-bottom: 20px;
+}
+.text-span{
+    font-weight: bold;
+}
+.blue
+{
+    color: #4285f4;
+}
+.red
+{
+    color: #ea4335;
+}
+.yellow
+{
+    color: #fbc605;
+}
+.green
+{
+    color: #34a853;
+}
+button {
+    margin: 0 auto;
+    border: none;
+    box-sizing:border-box;
+    display: inline-block;
+    font-size: 13px;
+    position: relative;
+    cursor: pointer;
+    height: 36px;
+}
+.search-pos
+{
+    padding-top: 30px;
+}
+.search-box
+{
+    width: 428px;
+    height: 36px;
+    font-size: 20px;
+}
+.main-pos
+{
+    padding-top: 30px;
+    text-align: center;
+}
+.main
+{
+    display: inline-block;
+    text-align: left;
+}
+ul
+{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+a{
+    font-size: 20px;
+}
+/*buttonSearch*/
+.buttonSearch {
+    border:none;
+    background-color: #f4f4f4;
+    color: #AAA7A6;
+    overflow:hidden;
+    width:90px;
+}
+.buttonSearch:hover
+{
+    color: #000000;
+    border:solid 1px;
+    border-color:#c6c6c6;
+}
+.left
+{
+    padding-right: 40px;
+}
+.c-box
+{
+    display: inline-block;
+    text-align: left;
+}
+/*buttonSearch(右)*/
+.buttonSearch-right {
+    border:none;
+    background-color: #f4f4f4;
+    color: #AAA7A6;
+    overflow:hidden;
+    width:138px;
+}
+.buttonSearch-right:hover
+{
+    color: #000000;
+    border:solid 1px;
+    border-color:#c6c6c6;
+}
+
+.ans-1
+{
+    font-size: 20px;
+    border:none;
+    background-color: #4285f4;
+    color: #ffffff;
+    overflow:hidden;
+    width:168px;
+}
+.ans-1:hover
+{
+    color: #000000;
+    border:solid 1px;
+    border-color:#c6c6c6;
+}
+
+.ans-2
+{
+    font-size: 20px;
+    border:none;
+    background-color: #ea4335;
+    color: #ffffff;
+    overflow:hidden;
+    width:168px;
+}
+.ans-2:hover
+{
+    color: #000000;
+    border:solid 1px;
+    border-color:#c6c6c6;
+}
+.ans-3
+{
+    font-size: 20px;
+    border:none;
+    background-color: #fbc605;
+    color: #ffffff;
+    overflow:hidden;
+    width:168px;
+}
+.ans-3:hover
+{
+    color: #000000;
+    border:solid 1px;
+    border-color:#c6c6c6;
+}
+.ans-4
+{
+    font-size: 20px;
+    border:none;
+    background-color: #34a853;
+    color: #ffffff;
+    overflow:hidden;
+    width:168px;
+}
+.ans-4:hover
+{
+    color: #000000;
+    border:solid 1px;
+    border-color:#c6c6c6;
+}
